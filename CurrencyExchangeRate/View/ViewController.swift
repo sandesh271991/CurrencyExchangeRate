@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import CoreData
 
-class ViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UIPickerViewDelegate, UIPickerViewDataSource {
+class ViewController: UIViewController, UITextFieldDelegate {
     
     var relativeToDoller: Double = 0
     var selectedCurrency = ""
@@ -19,8 +20,8 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     var toolBar = UIToolbar()
     var picker  = UIPickerView()
     
-    var currencyKeyList = [String]()
-    var currencyValueList = [String]()
+    var currencyList = [AnyObject]()
+    var exchangeRateList = [AnyObject]()
     
     var currenciesViewModel: CurrenciesViewModel?
     var currencyData: CurrencyData? {
@@ -28,19 +29,8 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         didSet {
             guard let currencyData = currencyData else { return }
             currenciesViewModel = CurrenciesViewModel.init(currencyData: currencyData)
-            
-            DispatchQueue.main.async {
-                self.currencyKeyList = self.currenciesViewModel!.currencies.map { return $0.key }
-                print(self.currencyKeyList)
-                
-                self.currencyValueList = self.currenciesViewModel!.currencies.map { return $0.value }
-                print(self.currencyValueList)
-            }
         }
     }
-    
-    var exchangeRateKeyList = [String]()
-    var exchangeRateValueList = [Double]()
     
     var exchangeRateViewModel: ExchangeRateViewModel?
     var exchangeRateData: ExchangeRateData? {
@@ -50,27 +40,28 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
             exchangeRateViewModel = ExchangeRateViewModel.init(exchangeRateData: exchangeRateData)
             
             DispatchQueue.main.async {
-                self.exchangeRateKeyList = self.exchangeRateViewModel!.exchangeRate.map { return $0.key }
-                print(self.exchangeRateKeyList)
-                
-                self.exchangeRateValueList = self.exchangeRateViewModel!.exchangeRate.map { return $0.value }
-                print(self.exchangeRateValueList)
-                
                 self.collectionView.reloadData()
             }
         }
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        
         self.fetchCurreniesData()
-        self.fetchExchangeRateData()
+        self.fetchExchangeRateData {[weak self] (success) in
+            
+            if success {
+                self?.retrieveExchangeRateData()
+            }
+        }
+        txtAmount.delegate = self
     }
     
+    
+    // MARK: API Calling to get data
     @objc func fetchCurreniesData() {
-        
-        if isConnectedToInternet() == true {
+        if isConnectedToInternet() == true &&  isNotCalledInLast30Min() {
             let webserviceURLNew = webserviceURL + "list?access_key=" + accessToken
             
             Webservice.shared.getCurreniesData(with: webserviceURLNew) { (currencyData, error) in
@@ -80,54 +71,51 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
                 }
                 guard let currencyData = currencyData else {return}
                 self.currencyData = currencyData
+                CoreManager.shared.saveCurrencyListData(currencies: self.currenciesViewModel!.currencies)
             }
         } else {
-            showAlert(title: "No Internet Connection", message: "Please check your internet connection")
+            self.showAlert(title: "No Internet Connection", message: "Please check your internet connection")
         }
     }
     
     
-    @objc func fetchExchangeRateData() {
+    @objc func fetchExchangeRateData(completion:  @escaping (Bool)->Void) {
         
-        if isConnectedToInternet() == true {
+        if isConnectedToInternet() == true &&  isNotCalledInLast30Min() {
             let webserviceURLNew = webserviceURL + "live?access_key=" + accessToken + "&format=1"
             
             Webservice.shared.getExchangeRateData(with: webserviceURLNew) { (exchangeRateData, error) in
                 
                 if error != nil {
+                    completion(false)
                     return
                 }
                 guard let exchangeRateData = exchangeRateData else {return}
                 self.exchangeRateData = exchangeRateData
-                //self.createData()
+                CoreManager.shared.saveExchangeRateData(exchangeRate: self.exchangeRateViewModel!.exchangeRate)
+                completion(true)
             }
         } else {
-            showAlert(title: "No Internet Connection", message: "Please check your internet connection")
+            self.showAlert(title: "No Internet Connection", message: "Please check your internet connection")
+            completion(true)
         }
     }
     
-    
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return exchangeRateKeyList.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "exchangeRateCell", for: indexPath) as! ExchangeRateCollectionViewCell
-        cell.lblExchangeCurrency.text = exchangeRateKeyList[indexPath.row]
-        cell.lblExchangeRate.text = "\((exchangeRateValueList[indexPath.row]).roundToDecimal(2))"
+    // MARK: To check if API called in last 30 min
+    func isNotCalledInLast30Min() -> Bool {
+        let lastTime  = UserDefaults.standard.double(forKey:"lastTime")
         
-        if !txtAmount.text!.isEmpty || (txtAmount.text! as NSString).doubleValue > 0 {
-            let exchangedValue = (relativeToDoller * exchangeRateValueList[indexPath.row])
-            cell.lblExchangeAmount.text = "\(txtAmount.text!) \(selectedCurrency) = \(exchangeRateKeyList[indexPath.row].suffix(3)) \(exchangedValue.roundToDecimal(2))"
-            cell.lblExchangeAmount.isHidden = false
+        let currentTime = Date().timeIntervalSince1970
+        
+        let defaults = UserDefaults.standard
+        defaults.set(currentTime, forKey: "lastTime")
+        if (lastTime == 0 || currentTime - lastTime >= 30.0 * 60){
+            return true
         }
         else{
-            cell.lblExchangeAmount.isHidden = true
+            return false
         }
-        return cell
     }
-    
     
     
     @IBAction func btnSelectCurrency(_ sender: Any) {
@@ -135,6 +123,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
             showAlert(title: "Please enter amount to convert", message: "")
         }
         else{
+            self.retrieveCurrencyListData()
             picker = UIPickerView.init()
             picker.delegate = self
             self.picker.dataSource = self
@@ -152,50 +141,68 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         }
     }
     
+    
+    // MARK: TextFiled Delegate
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        btnSelectedCurrency.setTitle(selectCurrency, for: .normal)
+        selectedCurrency = ""
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        collectionView.reloadData()
+    }
+    
     @objc func onDoneButtonTapped() {
         toolBar.removeFromSuperview()
         picker.removeFromSuperview()
         collectionView.reloadData()
     }
-    
-    
-    func numberOfComponents(in pickerView: UIPickerView) -> Int {
-        return 1
+
+    // MARK: To get relative doller rate for selected currency
+    func getRateRelativeToDoller(exchangeRate: Double, amount: Double) -> Double{
+        let relativeToDoller  = (1 *  (txtAmount.text! as NSString).doubleValue) / exchangeRate
+        return relativeToDoller
     }
     
-    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return currencyKeyList.count
-    }
-    
-    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return "\(currencyKeyList[row]): \(currencyValueList[row])"
-    }
-    
-    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+    // MARK: To get data from Core Data
+    func retrieveCurrencyListData() {
         
-        let exchnageRateCode = "USD" + currencyKeyList[row]
-        let exchnageRateCodeIndex = exchangeRateKeyList.firstIndex(of: exchnageRateCode)
+        currencyList.removeAll()
         
-        let exchangeRate = exchangeRateValueList[exchnageRateCodeIndex ?? 0]
-        relativeToDoller  = (1 *  (txtAmount.text! as NSString).doubleValue) / exchangeRate
-        selectedCurrency = currencyKeyList[row]
-        btnSelectedCurrency.setTitle("\(currencyKeyList[row])", for: .normal)
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let managedContext = appDelegate.persistentContainer.viewContext
+        
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: currencyLocalData)
+        
+        do {
+            let result = try managedContext.fetch(fetchRequest)
+            
+            for data in result as! [NSManagedObject] {
+                currencyList.append(data)
+            }
+        } catch {
+            print("Failed")
+        }
+    }
+    
+    
+    func retrieveExchangeRateData() {
+        
+        exchangeRateList.removeAll()
+        
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let managedContext = appDelegate.persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: exchangeRateLocalData )
+        
+        do {
+            let result = try managedContext.fetch(fetchRequest)
+            for data in result as! [NSManagedObject] {
+                exchangeRateList.append(data)
+            }
+        } catch {
+            print("Failed")
+        }
     }
 }
 
 
-extension ViewController : UICollectionViewDelegateFlowLayout {
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        
-        let noOfCellsInRow = 2
-        let flowLayout = collectionViewLayout as! UICollectionViewFlowLayout
-        
-        let totalSpace = flowLayout.sectionInset.left
-            + flowLayout.sectionInset.right
-            + (flowLayout.minimumInteritemSpacing * CGFloat(noOfCellsInRow - 1))
-        
-        let size = Int((collectionView.bounds.width - totalSpace) / CGFloat(noOfCellsInRow))
-        return CGSize(width: size, height: size)
-    }
-}

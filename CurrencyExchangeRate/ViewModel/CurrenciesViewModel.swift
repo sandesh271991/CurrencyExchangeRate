@@ -20,7 +20,6 @@ class CurrenciesViewModel: NSObject {
         return currencyData?.currencies ?? ["":""]
     }
     
-    
     init(currencyData: CurrencyData) {
         self.currencyData = currencyData
     }

@@ -9,8 +9,11 @@
 import Foundation
 
 
-let weatherCellId = "weatherCell"
-let WeatherLocalDataEntity = "WeatherLocalData"
+let exchangeRateCell = "exchangeRateCell"
+let selectCurrency = "Select Currency"
 
-var accessToken = "e5c5fdeeadcd0d9f617dbf4c4c419021"
+let currencyLocalData = "CurrencyLocalData"
+let exchangeRateLocalData = "ExchangeRateLocalData"
+
+let accessToken = "e5c5fdeeadcd0d9f617dbf4c4c419021"
 let webserviceURL = "http://api.currencylayer.com/"

@@ -23,7 +23,6 @@ class Webservice: NSObject {
                 let string = String(decoding: data, as: UTF8.self)
                 
                 if let datastr = string.data(using: String.Encoding.utf8) {
-                    //Map response data into model
                     do {
                         let currencyData = try JSONDecoder().decode(CurrencyData.self, from: datastr)
                         completion(currencyData, nil)
@@ -31,9 +30,6 @@ class Webservice: NSObject {
                         
                     } catch let error as NSError {
                         print(error)
-//                        if string[value(forKey: "cod")]{
-//                            print("city not found")
-//                        }
                         completion(nil, error)
                     }
                 }
@@ -45,33 +41,28 @@ class Webservice: NSObject {
     
     
     func getExchangeRateData(with url: String, completion:@escaping (_ data: ExchangeRateData?, _ error: Error?) -> Void) {
-            
-            AF.request(url).responseData { (responseData) in
-                switch responseData.result {
-                case .success(let data):
-                    
-                    //Apply string encoding as response is not UTF 8 formatted
-                    let string = String(decoding: data, as: UTF8.self)
-                    
-                    if let datastr = string.data(using: String.Encoding.utf8) {
-                        //Map response data into model
-                        do {
-                            let exchangeRateData = try JSONDecoder().decode(ExchangeRateData.self, from: datastr)
-                            completion(exchangeRateData, nil)
-                            print("sardar \(exchangeRateData)")
-                            
-                        } catch let error as NSError {
-                            print(error)
-    //                        if string[value(forKey: "cod")]{
-    //                            print("city not found")
-    //                        }
-                            completion(nil, error)
-                        }
+        
+        AF.request(url).responseData { (responseData) in
+            switch responseData.result {
+            case .success(let data):
+                
+                let string = String(decoding: data, as: UTF8.self)
+                
+                if let datastr = string.data(using: String.Encoding.utf8) {
+                    do {
+                        let exchangeRateData = try JSONDecoder().decode(ExchangeRateData.self, from: datastr)
+                        completion(exchangeRateData, nil)
+                        print("sardar \(exchangeRateData)")
+                        
+                    } catch let error as NSError {
+                        print(error)
+                        completion(nil, error)
                     }
-                case .failure(let error):
-                    completion(nil, error)
                 }
+            case .failure(let error):
+                completion(nil, error)
             }
         }
+    }
 }
 

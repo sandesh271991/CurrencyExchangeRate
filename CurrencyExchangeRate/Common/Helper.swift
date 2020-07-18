@@ -24,7 +24,6 @@ extension UIViewController {
     }
 }
 
-
 extension Double {
     func roundToDecimal(_ fractionDigits: Int) -> Double {
         let multiplier = pow(10, Double(fractionDigits))

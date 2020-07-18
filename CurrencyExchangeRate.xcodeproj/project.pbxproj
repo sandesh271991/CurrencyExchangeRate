@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		022F5FB224C2D39E00135D81 /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 022F5FB124C2D39E00135D81 /* CoreDataManager.swift */; };
+		022F5FB424C3238D00135D81 /* ViewController+PickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 022F5FB324C3238D00135D81 /* ViewController+PickerView.swift */; };
+		022F5FB624C3241F00135D81 /* Viewcontroller+CollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 022F5FB524C3241F00135D81 /* Viewcontroller+CollectionView.swift */; };
 		023543E724BF6BDF0027E958 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023543E624BF6BDF0027E958 /* AppDelegate.swift */; };
 		023543E924BF6BDF0027E958 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023543E824BF6BDF0027E958 /* SceneDelegate.swift */; };
 		023543EB24BF6BDF0027E958 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023543EA24BF6BDF0027E958 /* ViewController.swift */; };
@@ -47,6 +50,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		022F5FB124C2D39E00135D81 /* CoreDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
+		022F5FB324C3238D00135D81 /* ViewController+PickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+PickerView.swift"; sourceTree = "<group>"; };
+		022F5FB524C3241F00135D81 /* Viewcontroller+CollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Viewcontroller+CollectionView.swift"; sourceTree = "<group>"; };
 		023543E324BF6BDF0027E958 /* CurrencyExchangeRate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CurrencyExchangeRate.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		023543E624BF6BDF0027E958 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		023543E824BF6BDF0027E958 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -171,6 +177,8 @@
 			children = (
 				023543EC24BF6BDF0027E958 /* Main.storyboard */,
 				023543EA24BF6BDF0027E958 /* ViewController.swift */,
+				022F5FB324C3238D00135D81 /* ViewController+PickerView.swift */,
+				022F5FB524C3241F00135D81 /* Viewcontroller+CollectionView.swift */,
 				0235441924BF75270027E958 /* ExchangeRateCollectionViewCell.swift */,
 			);
 			path = View;
@@ -208,6 +216,7 @@
 			children = (
 				0235442324C034E30027E958 /* AppConstant.swift */,
 				0235442124C034B70027E958 /* Helper.swift */,
+				022F5FB124C2D39E00135D81 /* CoreDataManager.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -481,8 +490,11 @@
 				023543EB24BF6BDF0027E958 /* ViewController.swift in Sources */,
 				0235442024C032330027E958 /* CurrenciesViewModel.swift in Sources */,
 				023543F124BF6BDF0027E958 /* CurrencyExchangeRate.xcdatamodeld in Sources */,
+				022F5FB424C3238D00135D81 /* ViewController+PickerView.swift in Sources */,
+				022F5FB224C2D39E00135D81 /* CoreDataManager.swift in Sources */,
 				0235442224C034B70027E958 /* Helper.swift in Sources */,
 				023543E724BF6BDF0027E958 /* AppDelegate.swift in Sources */,
+				022F5FB624C3241F00135D81 /* Viewcontroller+CollectionView.swift in Sources */,
 				023543E924BF6BDF0027E958 /* SceneDelegate.swift in Sources */,
 				0235442B24C04C390027E958 /* ExchangeRateData.swift in Sources */,
 				0235441A24BF75270027E958 /* ExchangeRateCollectionViewCell.swift in Sources */,

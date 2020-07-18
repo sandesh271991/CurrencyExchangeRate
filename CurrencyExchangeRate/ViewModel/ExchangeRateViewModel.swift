@@ -17,7 +17,6 @@ class ExchangeRateViewModel: NSObject {
         return exchangeRateData?.quotes ?? ["": 0]
     }
     
-    
     init(exchangeRateData: ExchangeRateData) {
         self.exchangeRateData = exchangeRateData
     }
